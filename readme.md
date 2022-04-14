@@ -1,7 +1,7 @@
 # Личный проект «Типотека» [![Build status][travis-image]][travis-url]
 
 * Студент: [Karl Gustav](https://up.htmlacademy.ru/nodejs/3/user/977737).
-* Наставник: `Неизвестно`.
+* Наставник: `Михаил Кислый`.
 
 ---
 
