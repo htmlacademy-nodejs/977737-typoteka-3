@@ -1,9 +1,12 @@
 'use strict';
 
 const moment = require(`moment`);
-const {getRandomInt, shuffle} = require(`../../utils`);
-const fs = require(`fs`);
+const chalk = require(`chalk`);
+const fs = require(`fs`).promises;
+
 const {ExitCode} = require(`../../constants`);
+const {getRandomInt, shuffle} = require(`../../utils`);
+
 
 const DEFAULT_COUNT = 1;
 const MAX_COUNT = 1000;
@@ -68,28 +71,25 @@ const generateArticle = (count) => (
   }))
 );
 
-const makeResponseMessage = (err) => {
-  if (err) {
-    return console.error(`Can't write data to file...`);
-  }
-
-  return console.info(`Operation success. File created.`);
-};
-
 const checkCountArticle = (count) => {
   if (count > MAX_COUNT) {
-    console.error(`Не больше 1000 публикаций`);
+    console.error(chalk.red(`Не больше 1000 публикаций`));
     process.exit(ExitCode.error);
   }
 };
 
 module.exports = {
   name: `--generate`,
-  run(args) {
+  async run(args) {
     const [count] = args;
     checkCountArticle(count);
     const countOffer = Number.parseInt(count, 10) || DEFAULT_COUNT;
     const content = JSON.stringify(generateArticle(countOffer));
-    fs.writeFile(FILE_NAME, content, makeResponseMessage);
+    try {
+      await fs.writeFile(FILE_NAME, content);
+      console.info(chalk.green(`Operation success. File created.`));
+    } catch (err) {
+      console.error(chalk.red(`Can't write data to file...`));
+    }
   },
 };
