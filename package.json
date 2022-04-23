@@ -5,9 +5,8 @@
   "main": "./src/service/service.js",
   "scripts": {
     "test": "npm run eslint",
-    "start": "node ./src/service/service.js",
     "eslint": "eslint --ext .js src/",
-    "start.dev": "nodemon ./src/main.js"
+    "start": "nodemon ./src/service.js --server"
   },
   "repository": {
     "type": "git",

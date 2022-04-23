@@ -1,11 +1,10 @@
 "use strict";
 
 const moment = require(`moment`);
-const chalk = require(`chalk`);
 const fs = require(`fs`).promises;
 
 const {ExitCode} = require(`../../constants`);
-const {getRandomInt, shuffle} = require(`../../utils`);
+const {getRandomInt, shuffle, customConsole} = require(`../../utils`);
 
 const DEFAULT_COUNT = 1;
 const MAX_COUNT = 1000;
@@ -20,7 +19,7 @@ const readContent = async (filePath) => {
     const content = await fs.readFile(filePath, `utf-8`);
     return content.trim().split(`\n`);
   } catch (err) {
-    console.error(chalk.red(err));
+    customConsole.error(err);
     return [];
   }
 };
@@ -41,7 +40,7 @@ const generateArticle = (data) => {
 
 const checkCountArticle = (count) => {
   if (count > MAX_COUNT) {
-    console.error(chalk.red(`Не больше 1000 публикаций`));
+    customConsole(`Не больше 1000 публикаций`);
     process.exit(ExitCode.error);
   }
 };
@@ -56,13 +55,17 @@ module.exports = {
     const [count] = args;
     checkCountArticle(count);
     const countOffer = Number.parseInt(count, 10) || DEFAULT_COUNT;
-    const content = JSON.stringify(generateArticle({countOffer, sentencesData, titlesData, categoriesData})
-    );
+    const content = JSON.stringify(generateArticle({
+      count: countOffer,
+      sentencesData,
+      titlesData,
+      categoriesData
+    }));
     try {
       await fs.writeFile(FILE_NAME, content);
-      console.info(chalk.green(`Operation success. File created.`));
+      customConsole.info(`Operation success. File created.`);
     } catch (err) {
-      console.error(chalk.red(`Can't write data to file...`));
+      customConsole.error(`Can't write data to file...`);
     }
   },
 };
