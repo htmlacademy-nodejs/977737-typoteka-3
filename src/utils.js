@@ -1,5 +1,7 @@
 'use strict';
 
+const chalk = require(`chalk`);
+
 module.exports.getRandomInt = (min, max) => {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -19,4 +21,24 @@ module.exports.ensureArray = (value) => Array.isArray(value) ? value : [value];
 
 module.exports.prepareErrors = (errors) => {
   return errors.response.data.split(`\n`);
+};
+
+module.exports.HttpCode = {
+  OK: 200,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+  FORBIDDEN: 403,
+  UNAUTHORIZED: 401,
+};
+
+module.exports.customConsole = {
+  info: (content) => {
+    console.info(chalk.green(content));
+  },
+  error: (content) => {
+    console.error(chalk.red(content));
+  },
+  log: (content) => {
+    console.log(chalk.gray(content));
+  },
 };
