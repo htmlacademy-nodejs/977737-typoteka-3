@@ -19,7 +19,7 @@ app.get(`/posts`, async (req, res) => {
   }
 });
 
-app.use((req, res) => res.status(HttpCode.NOT_FOUND).send(`Not found3`));
+app.use((req, res) => res.status(HttpCode.NOT_FOUND).send(`Not found`));
 
 module.exports = {
   name: `--server`,
