@@ -2,17 +2,20 @@
 
 const moment = require(`moment`);
 const fs = require(`fs`).promises;
+const {nanoid} = require(`nanoid`);
 
-const {ExitCode} = require(`../../constants`);
+const {ExitCode, MAX_ID_LENGTH} = require(`../../constants`);
 const {getRandomInt, shuffle, customConsole} = require(`../../utils`);
 
+const FILE_NAME = `mocks.json`;
 const DEFAULT_COUNT = 1;
 const MAX_COUNT = 1000;
-const FILE_NAME = `mocks.json`;
+const MAX_COMMENTS = 4;
 
 const FILE_SENTENCES_PATH = `./src/data/sentences.txt`;
 const FILE_TITLES_PATH = `./src/data/titles.txt`;
 const FINE_CATEGORIES_PATH = `./src/data/categories.txt`;
+const FILE_COMMENTS_PAHT = `./src/data/comments.txt`;
 
 const readContent = async (filePath) => {
   try {
@@ -24,17 +27,26 @@ const readContent = async (filePath) => {
   }
 };
 
+const generateComments = (count, comments) => (Array(count).fill({}).map(() => ({
+  id: nanoid(MAX_ID_LENGTH),
+  text: shuffle(comments)
+    .slice(0, getRandomInt(1, 3))
+    .join(` `)
+})));
+
 const generateArticle = (data) => {
-  const {count, sentencesData, titlesData, categoriesData} = data;
+  const {count, sentencesData, titlesData, categoriesData, commentsData} = data;
   return Array(count)
     .fill({})
     .map(() => ({
+      id: nanoid(MAX_ID_LENGTH),
       title: titlesData[getRandomInt(0, titlesData.length - 1)],
       createdDate: moment()
         .add(-getRandomInt(1, 90), `day`)
         .format(`DD-MM-YYYY hh:mm:ss`),
       announce: shuffle(sentencesData).slice(0, getRandomInt(0, 4)),
       сategory: shuffle(categoriesData).slice(0, categoriesData.length - 1),
+      comments: generateComments(getRandomInt(1, MAX_COMMENTS), commentsData),
     }));
 };
 
@@ -51,6 +63,7 @@ module.exports = {
     const sentencesData = await readContent(FILE_SENTENCES_PATH);
     const titlesData = await readContent(FILE_TITLES_PATH);
     const categoriesData = await readContent(FINE_CATEGORIES_PATH);
+    const commentsData = await readContent(FILE_COMMENTS_PAHT);
 
     const [count] = args;
     checkCountArticle(count);
@@ -59,7 +72,8 @@ module.exports = {
       count: countOffer,
       sentencesData,
       titlesData,
-      categoriesData
+      categoriesData,
+      commentsData,
     }));
     try {
       await fs.writeFile(FILE_NAME, content);
