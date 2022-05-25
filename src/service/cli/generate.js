@@ -47,6 +47,7 @@ const generateArticle = (data) => {
       announce: shuffle(sentencesData).slice(0, getRandomInt(0, 4)),
       сategory: shuffle(categoriesData).slice(0, categoriesData.length - 1),
       comments: generateComments(getRandomInt(1, MAX_COMMENTS), commentsData),
+      text: sentencesData[getRandomInt(0, 4)],
     }));
 };
 

@@ -34,6 +34,11 @@ module.exports = (app, articleService, commentService) => {
 
   route.put(`/:articleId`, articleValidator, (req, res) => {
     const {articleId} = req.params;
+    const existArticle = articleService.findOne(articleId);
+
+    if (!existArticle) {
+      return res.status(HttpCode.NOT_FOUND).sent(RESPONSE_TEXT.NOT_FOUND);
+    }
     const updatedArticle = articleService.update(articleId, req.body);
 
     return res.status(HttpCode.OK).json(updatedArticle);
@@ -43,7 +48,7 @@ module.exports = (app, articleService, commentService) => {
     const {articleId} = req.params;
     const article = articleService.remove(articleId);
 
-    if (article) {
+    if (!article) {
       return res.status(HttpCode.NOT_FOUND).send(`${RESPONSE_TEXT.NOT_FOUND} with ${articleId}`);
     }
 
@@ -59,7 +64,7 @@ module.exports = (app, articleService, commentService) => {
 
   route.delete(`/:articleId/comments/:commentId`, articleExist(articleService), (req, res) => {
     const {article} = res.locals;
-    const {commentId} = req.body;
+    const {commentId} = req.params;
     const deleteComment = commentService.remove(article, commentId);
 
     if (!deleteComment) {
