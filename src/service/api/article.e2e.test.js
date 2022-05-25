@@ -72,7 +72,7 @@ const URL = `/articles`;
 
 const createApi = () => {
   const app = express();
-  const cloneData = [...mockData];
+  const cloneData = JSON.parse(JSON.stringify(mockData));
 
   app.use(express.json());
 
