@@ -7,7 +7,7 @@ class CommentService {
   create(article, comment) {
     const newComment = Object.assign({id: nanoid(MAX_ID_LENGTH)}, comment);
 
-    article.comment.push(newComment);
+    article.comments.push(newComment);
     return newComment;
   }
 
@@ -18,7 +18,7 @@ class CommentService {
       return null;
     }
 
-    article.comments.filter((comment) => comment.id !== id);
+    article.comments = article.comments.filter((comment) => comment.id !== id);
 
     return removedComment;
   }

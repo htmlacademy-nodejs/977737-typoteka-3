@@ -24,3 +24,8 @@ module.exports.RESPONSE_TEXT = {
   NOT_FOUND: `Not found`,
   BAD_REQ: `Bad request`,
 };
+
+module.exports.Env = {
+  DEVELOPMENT: `development`,
+  PRODUCTION: `production`
+};
