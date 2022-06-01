@@ -25,7 +25,7 @@ class API {
     return this._load(`/articles`);
   }
 
-  getOffer(id) {
+  getArticle(id) {
     return this._load(`/articles/${id}`);
   }
 
@@ -34,10 +34,10 @@ class API {
   }
 
   async getCategories() {
-    return this._load(`/category`);
+    return this._load(`/categories`);
   }
 
-  async createOffer(data) {
+  async createArticle(data) {
     return this._load(`/articles`, {
       method: `POST`,
       data

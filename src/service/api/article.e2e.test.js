@@ -13,7 +13,7 @@ const mockData = [
     id: `sIMWpv`,
     title: `Рок — это протест`,
     createdDate: `24-04-2022 06:39:29`,
-    announce: [],
+    announcement: [],
     сategory: [
       `IT`,
       `Без рамки`,
@@ -41,7 +41,7 @@ const mockData = [
     id: `_gjz2N`,
     title: `Ёлки. История деревьев`,
     createdDate: `09-04-2022 06:39:29`,
-    announce: [],
+    announcement: [],
     сategory: [
       `Без рамки`,
       `Музыка`,
@@ -115,7 +115,7 @@ describe(`API returns an article with given id`, () => {
 describe(`API create an article if data is valid`, () => {
   const newArticle = {
     title: `test title`,
-    category: [`Музыка`],
+    categories: [`Музыка`],
     photoFile: `file.png`,
     date: `11.11.2011`,
     announcement: [],
@@ -143,7 +143,7 @@ describe(`API create an article if data is valid`, () => {
 describe(`API refuses to create an article if data is invalid`, () => {
   const newArticle = {
     title: `test title`,
-    category: [`Музыка`],
+    categories: [`Музыка`],
     photoFile: `file.png`,
     date: `11.11.2011`,
     announcement: [],
@@ -164,7 +164,7 @@ describe(`API refuses to create an article if data is invalid`, () => {
 describe(`API changes existent article`, () => {
   const newArticle = {
     title: `test title`,
-    category: [`Музыка`],
+    categories: [`Музыка`],
     photoFile: `file.png`,
     date: `11.11.2011`,
     announcement: [],
@@ -197,7 +197,7 @@ test(`API returns status code 404 when trying to change non-existent article`, (
 
   const validArticle = {
     title: `test title`,
-    category: [`Музыка`],
+    categories: [`Музыка`],
     photoFile: `file.png`,
     date: `11.11.2011`,
     announcement: [],
@@ -215,7 +215,7 @@ test(`API returns status code 400 when trying to change an article with invalid 
 
   const invalidArticle = {
     title: `test title`,
-    category: [`Музыка`],
+    categories: [`Музыка`],
     photoFile: `file.png`,
     announcement: [],
     text: `test text`
