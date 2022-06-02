@@ -13,6 +13,8 @@ const app = express();
 
 app.use(express.json());
 
+app.use(API_PREFIX, routes);
+
 app.use((req, res) => {
   res.status(HttpCode.NOT_FOUND)
     .send(RESPONSE_TEXT.NOT_FOUND);
@@ -30,8 +32,6 @@ app.use((req, res, next) => {
   });
   next();
 });
-
-app.use(API_PREFIX, routes);
 
 module.exports = {
   name: `--server`,

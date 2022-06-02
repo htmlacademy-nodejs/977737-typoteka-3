@@ -2,6 +2,10 @@ doctype html
 html(lang="ru")
   include partials/head.pug
   .wrapper
+
+    mixin insertArticleImage(article)
+      img(src=`/img/${article.picture ? article.picture : 'background_img.jpg'}` alt=article.title width="460" height="240")
+
     include partials/header.pug
     block content
     include partials/footer.pug

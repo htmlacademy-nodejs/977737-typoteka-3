@@ -11,6 +11,11 @@ Thumbs.db
 *.log*
 node_modules/
 
+# Директория с загруженными изображениями
+src/express/upload/img/*.*
+
+!src/express/upload/img/.gitkeep
+
 # Директория с собранными файлами проекта
 build/
 

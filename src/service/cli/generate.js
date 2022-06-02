@@ -16,6 +16,7 @@ const FILE_SENTENCES_PATH = `./src/data/sentences.txt`;
 const FILE_TITLES_PATH = `./src/data/titles.txt`;
 const FINE_CATEGORIES_PATH = `./src/data/categories.txt`;
 const FILE_COMMENTS_PAHT = `./src/data/comments.txt`;
+const FILE_PICTURES_PATH = `./src/data/pictures.txt`;
 
 const readContent = async (filePath) => {
   try {
@@ -35,20 +36,37 @@ const generateComments = (count, comments) => (Array(count).fill({}).map(() => (
 })));
 
 const generateArticle = (data) => {
-  const {count, sentencesData, titlesData, categoriesData, commentsData} = data;
+  const {
+    count,
+    sentencesData,
+    titlesData,
+    categoriesData,
+    commentsData,
+    picturesData
+  } = data;
+
   return Array(count)
     .fill({})
-    .map(() => ({
-      id: nanoid(MAX_ID_LENGTH),
-      title: titlesData[getRandomInt(0, titlesData.length - 1)],
-      createdDate: moment()
+    .map(() => {
+      const date = moment()
         .add(-getRandomInt(1, 90), `day`)
-        .format(`DD-MM-YYYY hh:mm:ss`),
-      announce: shuffle(sentencesData).slice(0, getRandomInt(0, 4)),
-      сategory: shuffle(categoriesData).slice(0, categoriesData.length - 1),
-      comments: generateComments(getRandomInt(1, MAX_COMMENTS), commentsData),
-      text: sentencesData[getRandomInt(0, 4)],
-    }));
+        .format();
+
+      return {
+        id: nanoid(MAX_ID_LENGTH),
+        title: titlesData[getRandomInt(0, titlesData.length - 1)],
+        сategories: shuffle(categoriesData).slice(0, 2),
+        createdDate: moment(date).format(`DD-MM-YYYY hh:mm:ss`),
+        date,
+        announcement: shuffle(sentencesData).slice(0, getRandomInt(0, 4)).join(``),
+        comments: generateComments(getRandomInt(1, MAX_COMMENTS), commentsData),
+        text: sentencesData[getRandomInt(0, 4)],
+        photoFile:
+          getRandomInt(0, 1)
+            ? picturesData[getRandomInt(0, picturesData.length)]
+            : null,
+      };
+    });
 };
 
 const checkCountArticle = (count) => {
@@ -65,6 +83,7 @@ module.exports = {
     const titlesData = await readContent(FILE_TITLES_PATH);
     const categoriesData = await readContent(FINE_CATEGORIES_PATH);
     const commentsData = await readContent(FILE_COMMENTS_PAHT);
+    const picturesData = await readContent(FILE_PICTURES_PATH);
 
     const [count] = args;
     checkCountArticle(count);
@@ -75,6 +94,7 @@ module.exports = {
       titlesData,
       categoriesData,
       commentsData,
+      picturesData,
     }));
     try {
       await fs.writeFile(FILE_NAME, content);

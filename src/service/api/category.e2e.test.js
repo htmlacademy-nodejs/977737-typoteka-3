@@ -12,8 +12,8 @@ const mockData = [
     id: `sIMWpv`,
     title: `Рок — это протест`,
     createdDate: `24-04-2022 06:39:29`,
-    announce: [],
-    сategory: [
+    announcement: [],
+    сategories: [
       `IT`,
       `Без рамки`,
       `Кино`,
@@ -40,8 +40,8 @@ const mockData = [
     id: `_gjz2N`,
     title: `Ёлки. История деревьев`,
     createdDate: `09-04-2022 06:39:29`,
-    announce: [],
-    сategory: [
+    announcement: [],
+    сategories: [
       `Без рамки`,
       `Музыка`,
       `Деревья`,
