@@ -87,9 +87,9 @@ module.exports = {
 
     const [count] = args;
     checkCountArticle(count);
-    const countOffer = Number.parseInt(count, 10) || DEFAULT_COUNT;
+    const countArticle = Number.parseInt(count, 10) || DEFAULT_COUNT;
     const content = JSON.stringify(generateArticle({
-      count: countOffer,
+      count: countArticle,
       sentencesData,
       titlesData,
       categoriesData,
