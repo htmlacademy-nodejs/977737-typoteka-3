@@ -5,7 +5,7 @@ const {DataTypes, Model} = require(`sequelize`);
 
 const MaxLength = {
   TEXT: 1000,
-  ANNOUNCEMENT: 100,
+  ANNOUNCEMENT: 1000,
 };
 
 class Article extends Model {}
