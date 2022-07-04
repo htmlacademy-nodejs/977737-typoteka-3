@@ -1,13 +1,15 @@
-"use strict";
+'use strict';
 
-const moment = require(`moment`);
 const fs = require(`fs`).promises;
 const {nanoid} = require(`nanoid`);
 
 const {ExitCode, MAX_ID_LENGTH} = require(`../../constants`);
 const {getRandomInt, shuffle, customConsole} = require(`../../utils`);
 
-const FILE_NAME = `mocks.json`;
+const {getLogger} = require(`../lib/logger`);
+const sequelize = require(`../lib/sequelize`);
+const initDataBase = require(`../lib/init-db`);
+
 const DEFAULT_COUNT = 1;
 const MAX_COUNT = 1000;
 const MAX_COMMENTS = 4;
@@ -17,6 +19,8 @@ const FILE_TITLES_PATH = `./src/data/titles.txt`;
 const FINE_CATEGORIES_PATH = `./src/data/categories.txt`;
 const FILE_COMMENTS_PAHT = `./src/data/comments.txt`;
 const FILE_PICTURES_PATH = `./src/data/pictures.txt`;
+
+const logger = getLogger({});
 
 const readContent = async (filePath) => {
   try {
@@ -48,16 +52,9 @@ const generateArticle = (data) => {
   return Array(count)
     .fill({})
     .map(() => {
-      const date = moment()
-        .add(-getRandomInt(1, 90), `day`)
-        .format();
-
       return {
-        id: nanoid(MAX_ID_LENGTH),
         title: titlesData[getRandomInt(0, titlesData.length - 1)],
         сategories: shuffle(categoriesData).slice(0, 2),
-        createdDate: moment(date).format(`DD-MM-YYYY hh:mm:ss`),
-        date,
         announcement: shuffle(sentencesData).slice(0, getRandomInt(0, 4)).join(``),
         comments: generateComments(getRandomInt(1, MAX_COMMENTS), commentsData),
         text: sentencesData[getRandomInt(0, 4)],
@@ -71,14 +68,23 @@ const generateArticle = (data) => {
 
 const checkCountArticle = (count) => {
   if (count > MAX_COUNT) {
-    customConsole(`Не больше 1000 публикаций`);
+    logger.error(`Не больше 1000 публикаций`);
     process.exit(ExitCode.error);
   }
 };
 
 module.exports = {
-  name: `--generate`,
+  name: `--filldb`,
   async run(args) {
+    try {
+      logger.info(`Trying to connect to database...`);
+      await sequelize.authenticate();
+    } catch (err) {
+      logger.error(`An error occurred: ${err.message}`);
+      process.exit(1);
+    }
+    logger.info(`Connection to database established`);
+
     const sentencesData = await readContent(FILE_SENTENCES_PATH);
     const titlesData = await readContent(FILE_TITLES_PATH);
     const categoriesData = await readContent(FINE_CATEGORIES_PATH);
@@ -87,20 +93,17 @@ module.exports = {
 
     const [count] = args;
     checkCountArticle(count);
+
     const countArticle = Number.parseInt(count, 10) || DEFAULT_COUNT;
-    const content = JSON.stringify(generateArticle({
+    const articles = generateArticle({
       count: countArticle,
       sentencesData,
       titlesData,
       categoriesData,
       commentsData,
       picturesData,
-    }));
-    try {
-      await fs.writeFile(FILE_NAME, content);
-      customConsole.info(`Operation success. File created.`);
-    } catch (err) {
-      customConsole.error(`Can't write data to file...`);
-    }
-  },
+    });
+
+    return initDataBase(sequelize, {articles, categoriesData});
+  }
 };
