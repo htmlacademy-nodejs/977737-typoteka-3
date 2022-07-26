@@ -1,13 +1,20 @@
-"use strict";
+'use strict';
 
-const moment = require(`moment`);
 const fs = require(`fs`).promises;
-const {nanoid} = require(`nanoid`);
 
-const {ExitCode, MAX_ID_LENGTH} = require(`../../constants`);
+const {ExitCode} = require(`../../constants`);
 const {getRandomInt, shuffle, customConsole} = require(`../../utils`);
 
-const FILE_NAME = `mocks.json`;
+const {getLogger} = require(`../lib/logger`);
+const sequelize = require(`../lib/sequelize`);
+// const initDataBase = require(`../lib/init-db`);
+const Aliase = require(`../models/aliase`);
+
+const defineModels = require(`../models`);
+
+const {Category, Article} = defineModels(sequelize);
+
+
 const DEFAULT_COUNT = 1;
 const MAX_COUNT = 1000;
 const MAX_COMMENTS = 4;
@@ -17,6 +24,8 @@ const FILE_TITLES_PATH = `./src/data/titles.txt`;
 const FINE_CATEGORIES_PATH = `./src/data/categories.txt`;
 const FILE_COMMENTS_PAHT = `./src/data/comments.txt`;
 const FILE_PICTURES_PATH = `./src/data/pictures.txt`;
+
+const logger = getLogger({});
 
 const readContent = async (filePath) => {
   try {
@@ -29,18 +38,31 @@ const readContent = async (filePath) => {
 };
 
 const generateComments = (count, comments) => (Array(count).fill({}).map(() => ({
-  id: nanoid(MAX_ID_LENGTH),
   text: shuffle(comments)
     .slice(0, getRandomInt(1, 3))
     .join(` `)
 })));
+
+const getRandomSubarray = (items) => {
+  items = items.slice();
+  let count = getRandomInt(1, items.length - 1);
+  const result = [];
+  while (count--) {
+    result.push(
+        ...items.splice(
+            getRandomInt(0, items.length - 1), 1
+        )
+    );
+  }
+  return result;
+};
 
 const generateArticle = (data) => {
   const {
     count,
     sentencesData,
     titlesData,
-    categoriesData,
+    categoryModels,
     commentsData,
     picturesData
   } = data;
@@ -48,16 +70,9 @@ const generateArticle = (data) => {
   return Array(count)
     .fill({})
     .map(() => {
-      const date = moment()
-        .add(-getRandomInt(1, 90), `day`)
-        .format();
-
       return {
-        id: nanoid(MAX_ID_LENGTH),
         title: titlesData[getRandomInt(0, titlesData.length - 1)],
-        сategories: shuffle(categoriesData).slice(0, 2),
-        createdDate: moment(date).format(`DD-MM-YYYY hh:mm:ss`),
-        date,
+        categories: getRandomSubarray(categoryModels),
         announcement: shuffle(sentencesData).slice(0, getRandomInt(0, 4)).join(``),
         comments: generateComments(getRandomInt(1, MAX_COMMENTS), commentsData),
         text: sentencesData[getRandomInt(0, 4)],
@@ -71,36 +86,53 @@ const generateArticle = (data) => {
 
 const checkCountArticle = (count) => {
   if (count > MAX_COUNT) {
-    customConsole(`Не больше 1000 публикаций`);
+    logger.error(`Не больше 1000 публикаций`);
     process.exit(ExitCode.error);
   }
 };
 
 module.exports = {
-  name: `--generate`,
+  name: `--filldb`,
   async run(args) {
+    try {
+      logger.info(`Trying to connect to database...`);
+      await sequelize.authenticate();
+    } catch (err) {
+      logger.error(`An error occurred: ${err.message}`);
+      process.exit(1);
+    }
+    logger.info(`Connection to database established`);
+
     const sentencesData = await readContent(FILE_SENTENCES_PATH);
     const titlesData = await readContent(FILE_TITLES_PATH);
     const categoriesData = await readContent(FINE_CATEGORIES_PATH);
     const commentsData = await readContent(FILE_COMMENTS_PAHT);
     const picturesData = await readContent(FILE_PICTURES_PATH);
 
+    const categoryModels = await Category.bulkCreate(
+        categoriesData.map((item) => ({name: item}))
+    );
+
     const [count] = args;
     checkCountArticle(count);
+
     const countArticle = Number.parseInt(count, 10) || DEFAULT_COUNT;
-    const content = JSON.stringify(generateArticle({
+    const articles = generateArticle({
       count: countArticle,
       sentencesData,
       titlesData,
-      categoriesData,
+      categoryModels,
       commentsData,
       picturesData,
-    }));
-    try {
-      await fs.writeFile(FILE_NAME, content);
-      customConsole.info(`Operation success. File created.`);
-    } catch (err) {
-      customConsole.error(`Can't write data to file...`);
-    }
-  },
+    });
+
+
+    const articlePromises = articles.map(async (article) => {
+      const articleModel = await Article.create(article, {include: [Aliase.COMMENTS]});
+      await articleModel.addCategories(article.categories);
+    });
+
+    await Promise.all(articlePromises);
+    // return initDataBase(sequelize, {articles, categoriesData});
+  }
 };
