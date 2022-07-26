@@ -19,6 +19,9 @@ module.exports = async (sequelize, {categoriesData, articles}) => {
 
   const articlePromises = articles.map(async (article) => {
     const articleModel = await Article.create(article, {include: [Aliase.COMMENTS]});
+
+    console.log(articleModel, '_______________')
+
     await articleModel.addCategories(
         article.categories.map(
             (name) => categoryIdByName[name]

@@ -1,14 +1,19 @@
 'use strict';
 
 const fs = require(`fs`).promises;
-const {nanoid} = require(`nanoid`);
 
-const {ExitCode, MAX_ID_LENGTH} = require(`../../constants`);
+const {ExitCode} = require(`../../constants`);
 const {getRandomInt, shuffle, customConsole} = require(`../../utils`);
 
 const {getLogger} = require(`../lib/logger`);
 const sequelize = require(`../lib/sequelize`);
-const initDataBase = require(`../lib/init-db`);
+// const initDataBase = require(`../lib/init-db`);
+const Aliase = require(`../models/aliase`);
+
+const defineModels = require(`../models`);
+
+const {Category, Article} = defineModels(sequelize);
+
 
 const DEFAULT_COUNT = 1;
 const MAX_COUNT = 1000;
@@ -33,18 +38,31 @@ const readContent = async (filePath) => {
 };
 
 const generateComments = (count, comments) => (Array(count).fill({}).map(() => ({
-  id: nanoid(MAX_ID_LENGTH),
   text: shuffle(comments)
     .slice(0, getRandomInt(1, 3))
     .join(` `)
 })));
+
+const getRandomSubarray = (items) => {
+  items = items.slice();
+  let count = getRandomInt(1, items.length - 1);
+  const result = [];
+  while (count--) {
+    result.push(
+        ...items.splice(
+            getRandomInt(0, items.length - 1), 1
+        )
+    );
+  }
+  return result;
+};
 
 const generateArticle = (data) => {
   const {
     count,
     sentencesData,
     titlesData,
-    categoriesData,
+    categoryModels,
     commentsData,
     picturesData
   } = data;
@@ -54,7 +72,7 @@ const generateArticle = (data) => {
     .map(() => {
       return {
         title: titlesData[getRandomInt(0, titlesData.length - 1)],
-        сategories: shuffle(categoriesData).slice(0, 2),
+        categories: getRandomSubarray(categoryModels),
         announcement: shuffle(sentencesData).slice(0, getRandomInt(0, 4)).join(``),
         comments: generateComments(getRandomInt(1, MAX_COMMENTS), commentsData),
         text: sentencesData[getRandomInt(0, 4)],
@@ -91,6 +109,10 @@ module.exports = {
     const commentsData = await readContent(FILE_COMMENTS_PAHT);
     const picturesData = await readContent(FILE_PICTURES_PATH);
 
+    const categoryModels = await Category.bulkCreate(
+        categoriesData.map((item) => ({name: item}))
+    );
+
     const [count] = args;
     checkCountArticle(count);
 
@@ -99,11 +121,18 @@ module.exports = {
       count: countArticle,
       sentencesData,
       titlesData,
-      categoriesData,
+      categoryModels,
       commentsData,
       picturesData,
     });
 
-    return initDataBase(sequelize, {articles, categoriesData});
+
+    const articlePromises = articles.map(async (article) => {
+      const articleModel = await Article.create(article, {include: [Aliase.COMMENTS]});
+      await articleModel.addCategories(article.categories);
+    });
+
+    await Promise.all(articlePromises);
+    // return initDataBase(sequelize, {articles, categoriesData});
   }
 };
